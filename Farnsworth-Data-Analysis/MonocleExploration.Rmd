@@ -1,11 +1,12 @@
 ---
-title: "Seurat data subsetting & exp level graph"
+title: "Predicting PseudoTemporal Trajectory with Monocle3"
 author: "Shay Iyer"
-date: "5/10/2021"
+date: "5/17/2021"
 output: html_document
 editor_options: 
   chunk_output_type: console
 ---
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
@@ -13,21 +14,22 @@ library(sleepwalk)
 library(SCINA)
 library(R.utils)
 library(monocle3)
+library(Seurat)
+library(Signac)
+library(SeuratWrappers)
 require(monocle3)
 require(Seurat)
 require(data.table)
 theme_set(theme_bw(base_size=14))
 ```
 
-```{r}
+```{r read RDS}
 all <- readRDS("~/Desktop/Computational-Group/Farnsworth_2019.rds")
-```
-
-```{r}
+all <- NormalizeData(object = all, normalization.method = "LogNormalize", scale.factor = 10000)
 all <- UpdateSeuratObject(all)
 ```
 
-```{r}
+```{r rename clusters setup}
 all[["ClusterNames"]] <- Idents(object=all)
 current.cluster.ids <- c(0:220)
 # below list corresponds to the "Ident Annotation" column of the table Table S2
@@ -37,44 +39,40 @@ new.cluster.ids <- c("Peri1a", "RetProgAlla", "MHBDiff12a", "NonspecificAlla", "
 "PharEpi2", "PancExo", "NCcranial5d", "Peri2c", "Peri1b", "Macro12", "NCxantho25", "Basal5b", "Nonspecific1a", "BasalFin5b", "PancAB", "Peri1c", "Parachord1", "FBDiff12", "Nonspecific1b", "SCDiff12c", "MHBProg1", "TasteBud", "MusEntSmo", "HairCell", "Hypophysis", "Lens12", "Vessel5", "SCNeurCilia12b", "Arch2b", "FinBud2", "MusCard", "Basal2b", "HG2", "IonovH", "MusSkelSlow1b", "SpleenEpi", "Epiphysis", "Macro1", "Endothe1", "IntestineEpi1", "Peri1d", "Osteo", "Hepato5c", "Hypochord", "PGC", "Nonspecific")
 ```
 
-```{r}
-all <- UpdateSeuratObject(all)
-```
-
-```{r}
-#Switch to cluster name IDs 
+```{r map cluster number to cluster name}
+#Maps cluster number to cluster name 
 Idents(all) <- plyr::mapvalues(x = Idents(all), from = current.cluster.ids, to = new.cluster.ids)
 Idents(all)
 ```
 
-```{r}
+```{r reset identities to cluster number}
+#Reset identities to Cluster name (number)
+#Idents(all) <- "ClusterNames"
+#Idents(all)
+```
+
+```{r UMAP plot- all}
 #Plot the umap of everything! yay!
-DimPlot(object = all, reduction = "umap")
+#DimPlot(object = all, reduction = "umap")
 ```
 
-
-```{r}
+```{r nccranials subset}
 nccranial_all <- c("NCcranial1a", "NCcranial1b", "NCcranial1c", "NCcranial1d", "NCcranial1e", "NCcranial2", "NCcranial5a", "NCcranial5b", "NCcranial5c", "NCcranial5d", "NCcranial5e", "NCneural12", "NCneural25")
-```
 
-```{r}
 nccranials <- subset(x = all, idents = nccranial_all)
 ```
 
-```{r}
+```{r ridgeplots metrn/la in nccranials}
 RidgePlot(object = nccranials, feature = "metrnla") + labs(title = "Meteorin-like-a (metrnla) in Cranial Neural Crest populations", subtitle = "Cell populations as defined by Farnsworth et al., 2019")
-```
 
-```{r}
 RidgePlot(object = nccranials, feature = "metrn") + labs(title = "Meteorin (metrn) in Cranial Neural Crest populations", subtitle = "Cell populations as defined by Farnsworth et al., 2019")
 ```
 
-UMAP of all cells colored by timepoint
-```{r}
+```{r umap by 6 samples}
 DimPlot(object = all, reduction = "umap", group.by = "sample_name", pt.size = 0.1)
 ```
 
-```{r}
+```{r all1, all2, all5 subset generation}
 sample1 <- "1_olig2_24a"
 sample2 <- "2_olig2_24b"
 sample3 <- "3_olig2_48a"
@@ -96,35 +94,110 @@ all5 <- merge(all5a, all5b)
 rm(all1a, all1b, all2a, all2b, all5a, all5b)
 ```
 
-```{r}
-#set identities to sample_name
-Idents(all) <- "sample_name"
-Idents(all)
-```
-
-```{r}
-#set identities to Cluster name (number)
-
-Idents(all) <- "ClusterNames"
-Idents(all)
-```
-
-```{r}
-#Maps cluster number to cluster name 
-Idents(all) <- plyr::mapvalues(x = Idents(all), from = current.cluster.ids, to = new.cluster.ids)
-Idents(all)
-```
-
-```{r}
+```{r making metadata annotation for timepoint}
 current.sample_names <- c(sample1, sample2, sample3, sample4, sample5, sample6)
 new.sample.names <- c(1, 1, 2, 2, 5, 5)
 
 all@meta.data$sample_id <- plyr::mapvalues (x = all@meta.data$sample_name, from = current.sample_names, to = new.sample.names)
-```
 
-```{r}
 DimPlot(object = all, reduction = "umap", group.by = "sample_id", pt.size = 0.1)
 ```
 
+```{r renaming sample name thanks a lot monocle3}
+all$sample_anno <- all$sample_name
+all$sample_name <- NULL
+```
 
+```{seuratwrapper cds- weird}
+allcds <- as.cell_data_set(all)
+allcds <- preprocess_cds(allcds, num_dim = 20)
+allcds <- reduce_dimension(allcds, reduction_method = "UMAP", preprocess_method = NULL, umap.metric = "cosine", umap.n_neighbors = 20, umap.min_dist = 0.2)
+allcds <- cluster_cells(cds = allcds, reduction_method = "UMAP")
+allcds <- learn_graph(allcds, use_partition = TRUE)
+plot_cells(allcds, color_cells_by="ident")
+```
+
+```{r manual cds from object}
+data <- GetAssayData(object = all, slot = "counts")
+celldata <- as.data.frame(all@meta.data)
+genedata <- as.data.frame(x=row.names(data), row.names=row.names(data))
+colnames(genedata) <- "gene_short_name"
+allcds <- new_cell_data_set(data, cell_metadata = celldata, gene_metadata = genedata)
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+allcds <- preprocess_cds(allcds, num_dim = 20)
+allcds <- reduce_dimension(allcds, reduction_method = "UMAP", preprocess_method = NULL, umap.metric = "cosine", umap.n_neighbors = 20, umap.min_dist = 0.2)
+allcds <- cluster_cells(cds = allcds, reduction_method = "UMAP")
+allcds <- learn_graph(allcds, use_partition = TRUE)
+
+```
+
+```{r}
+plot_cells(allcds, color_cells_by = "cluster")
+```
+
+```{r}
+nccranials1 <- subset(x=all, idents = c("NCcranial1a", "NCcranial1b"))
+data2 <- GetAssayData(object = nccranials1, slot = "counts")
+celldata2 <- as.data.frame(nccranials1@meta.data)
+genedata2 <- as.data.frame(x=row.names(data2), row.names=row.names(data2))
+colnames(genedata2) <- "gene_short_name"
+ncc1.cds <- new_cell_data_set(data2, cell_metadata = celldata2, gene_metadata = genedata2)
+```
+
+```{r}
+cncc1.cells <- colnames(ncc1.cds)
+```
+
+```{r}
+allcds <- order_cells(allcds, reduction_method = "UMAP", root_cells = cncc1.cells)
+```
+
+```{r}
+plot_cells(
+  cds = allcds,
+  color_cells_by = "pseudotime",
+  graph_label_size = 1.5
+)
+```
+
+```{r}
+all$"NCCpseudotime" <- allcds@principal_graph_aux@listData$UMAP$pseudotime
+```
+
+```{r}
+FeaturePlot(all, c("NCCpseudotime"), pt.size = 0.1) & scale_color_viridis_c()
+```
+
+
+```{r}
+allncadj <- subset(all, subset = NCCpseudotime == "Inf", invert = TRUE)
+```
+
+```{r map cluster number to cluster name}
+#Maps cluster number to cluster name 
+Idents(allncadj) <- plyr::mapvalues(x = Idents(allncadj), from = current.cluster.ids, to = new.cluster.ids)
+```
+
+```{r}
+FeaturePlot(allncadj, c("NCCpseudotime"), pt.size = 0.1, label = TRUE, repel = TRUE) & scale_color_viridis_c()
+```
+
+The following `from` values were not present in `x`: Gill5a, MusSkelFast1, Gill5b, Basal5a, RBC1a, Hepato5a, RBC1b, Macro5, Peri2a, Peri2b, EndotheAllb, RetDiff2, RetPR, MusSkelSlow25, Hepato5b, Gill5c, Neutrophil, IntestineEpi5a, RBCProgAll, MusCeph, Notochord1, IonoNCC5b, Peri2c, Peri1b, Macro12, Basal5b, BasalFin5b, Peri1c, SCDiff12c, TasteBud, MusSkelSlow1b, SpleenEpi, Epiphysis, Macro1, IntestineEpi1, Hepato5c
+
+maybe notochord should have been my root tbh... then i would have two points
+```{r}
+FeaturePlot(allncadj, features = "NCCpseudotime")
+```
+
+```{r}
+allncadj$ClusterNames
+```
 
