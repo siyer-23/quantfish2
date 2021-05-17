@@ -1,0 +1,97 @@
+---
+title: "Seurat data subsetting"
+author: "Shay Iyer"
+date: "5/4/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+Note: running R v4.0.5
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(Seurat)
+library(tidyverse)
+library(sleepwalk)
+library(SCINA)
+library(R.utils)
+require(Seurat)
+require(data.table)
+theme_set(theme_bw(base_size=14))
+```
+
+```{r}
+mat <- fread("https://cells.ucsc.edu/zebrafish-dev/exprMatrix.tsv.gz")
+```
+
+
+```{r}
+meta <- data.frame(fread("https://cells.ucsc.edu/zebrafish-dev/meta.tsv"), row.names=1)
+genes = mat[,1][[1]]
+genes = gsub(".+[|]", "", genes)
+mat = data.frame(mat[,-1], row.names=genes)
+data <- CreateSeuratObject(
+  counts = mat, 
+  project = "zebrafish-dev", 
+  meta.data=meta)
+data<-NormalizeData(data, normalization.method = "LogNormalize", scale.factor=10000)
+```
+
+```{r}
+grep("\\bmetrn\\b",rownames(data@assays$RNA@counts),value = TRUE)
+```
+
+FIGURE OUT HOW TO SUBSET THE RIGHT DATA PLEASE!!!! GODSPEED 
+```{r}
+PercentageFeatureSet(data, pattern="^sox10") -> data$percent.sox10 
+sox10.expression = GetAssayData(object = data, assay="RNA", slot = "data")["sox10",]
+pos.sox10.ids = names(which(sox10.expression > 0))
+pos.sox10.cells = subset(data, cells=pos.sox10.ids)
+```
+
+```{r}
+PercentageFeatureSet(data, pattern="^metrn") -> data$percent.metrn
+metrn.expression = GetAssayData(object = pos.sox10.cells, assay="RNA", slot = "data")["metrn",]
+pos.metrn.ids = names(which(metrn.expression > 0))
+pos.soxcomet.cells = subset(data, cells=pos.metrn.ids)
+```
+
+```{r}
+PercentageFeatureSet(data, pattern="^metrnla") -> pos.sox10.cells$percent.metrnla
+metrnla.expression = GetAssayData(object = pos.sox10.cells, assay="RNA", slot = "data")["metrnla",]
+pos.metrnla.ids = names(which(metrnla.expression > 0))
+pos.soxcometla.cells = subset(data, cells=pos.metrnla.ids)
+```
+
+```{r}
+as_tibble(
+  pos.soxcomet.cells[[c("nCount_RNA","nFeature_RNA","percent.sox10","percent.metrns")]],
+  rownames="Cell.Barcode"
+) -> qc.soxcomet.metrics
+
+qc.soxcomet.metrics
+```
+
+```{r}
+qc.soxcomet.metrics %>% 
+  ggplot(aes(percent.sox10, percent.metrns)) + geom_point()
+```
+
+```{r}
+all.soxcom.cells <- merge(pos.soxcomet.cells, pos.soxcometla.cells, add.cell.ids = c("metrn", "metrnla"), project="zebrafish-dev")
+```
+
+```{r}
+as_tibble(
+  all.soxcom.cells[[c("nCount_RNA","nFeature_RNA","percent.sox10","percent.metrn", "percent.metrnla")]],
+  rownames="Cell.Barcode"
+) -> all.qc.metrics
+
+all.qc.metrics
+```
+
+```{r}
+all.qc.metrics %>% 
+  ggplot(aes(percent.sox10, percent.metrnla, color = grepl("\\b\\metrn", Cell.Barcode ))) + geom_point()
+```
+
