@@ -16,6 +16,12 @@ cars %>%
   group_by(speed) %>% 
   summarize(
     total = n()
+    
   )
+```
+
+```{r}
+data("mtcars")
+head(mtcars)
 ```
 
