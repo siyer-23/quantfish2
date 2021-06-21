@@ -125,12 +125,6 @@ colnames(genedata) <- "gene_short_name"
 allcds <- new_cell_data_set(data, cell_metadata = celldata, gene_metadata = genedata)
 ```
 
-
-```{r}
-
-```
-
-
 ```{r}
 allcds <- preprocess_cds(allcds, num_dim = 20)
 allcds <- reduce_dimension(allcds, reduction_method = "UMAP", preprocess_method = NULL, umap.metric = "cosine", umap.n_neighbors = 20, umap.min_dist = 0.2)

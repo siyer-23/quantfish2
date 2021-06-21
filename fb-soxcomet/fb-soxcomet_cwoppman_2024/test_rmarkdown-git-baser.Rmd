@@ -1,0 +1,21 @@
+---
+title: "Claire's Introduction to R Markdown"
+author: "Shay Iyer"
+date: "6/21/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+cars <- cars
+```
+
+```{r}
+cars %>% 
+  group_by(speed) %>% 
+  summarize(
+    total = n()
+  )
+```
+
