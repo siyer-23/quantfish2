@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 cars <- cars
+install.packages("dslabs")
+library(dslabs)
 ```
 
 ```{r}
