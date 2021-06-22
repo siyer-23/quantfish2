@@ -19,6 +19,8 @@ When you click the **Knit** button a document will be generated that includes bo
 library(tidyverse)
 library(dslabs)
 data(murders)
+murders %>%
+  ggplot(aes(population, total, label = abb, color = region)) + geom_label()
 ```
 
 ## Including Plots
@@ -31,4 +33,84 @@ plot(murders)
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
+**Notes:**
+to install a package for the first time, the code is install.packages("package_name")
 
+you can also install multiple at once by doing install.packages(c("package1", "package2"))
+
+to see all installed packages, run installed.packages()
+from then on, you can load it into your script/markdown file with library(package)
+
+to run an entire script, press control + shift + enter
+to run one line of code, press control + enter
+
+I'm not entirely sure how the murders %>% geom section works. maybe there will be something explaining this in the DataCamp tutorial once I can access more of it? 
+
+
+Objects:
+objects can be variables or more complex things like functions
+  storing variables:
+```{r}
+a <- 1
+b <- 1
+c <- -1
+```
+  printing variables:
+```{r}
+a
+print(a)
+```
+  When objects are defined in the console, the workspace is changed.
+  See all objects defined in the workspace:
+```{r}
+ls()
+```
+  quadratic formula example:
+```{r}
+(-b + sqrt(b^2 - 4*a*c))/(2*a)
+(-b - sqrt(b^2 - 4*a*c))/(2*a)
+```
+
+Functions:
+  
+  to evaluate a function, put parentheses at the end. if you don't add the parentheses, it shows you the code for the function.
+  
+  the argument of a function goes in between the parentheses. for a function like log() which takes the log of the argument, the argument can be a number or a variable that represents a number.
+  
+  there can also be nested functions. you can use a function to get the argument for another function.
+  example:
+```{r}
+exp(1)
+log(2.718)
+log(exp(1))
+```
+  IMPORTANT: functions are evaluated from the inside out. Above, exp happens before log.
+  
+  to get help (aka a user manual) on a function: help("function_name")
+  this will tell you what arguments it expects. If there is a default for an argument, it will be defined here using an =
+  
+  to get just the arguments and less other info, use args(function_name)
+```{r}
+args(log)
+```
+  this shows that you have to input a number to take the log of, and you can set a base if it isn't e. 
+  example:
+```{r}
+log(8, base = 2)
+log(x = 8, base = 2)
+```
+arithmetic and relational functions don't need arguments.  
+
+to see built in datasets:
+```{r}
+data()
+```
+
+
+Variable names:
+  must start with a letter, can't contain spaces
+  avoid using variable names that are the same as built in ones
+  use _ instead of spaces
+  
+Comments:
+  add comments with ##
