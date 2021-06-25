@@ -1,0 +1,79 @@
+---
+title: "Creating tbl of cells expressing sox10/metrn &sox10/metrnla"
+author: "Shay Iyer"
+date: "5/6/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+Note: running R v4.0.5
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Seurat)
+library(monocle3)
+library(tidyverse)
+library(sleepwalk)
+library(SCINA)
+library(R.utils)
+```
+
+```{r}
+require(Seurat)
+require(monocle3)
+require(data.table)
+theme_set(theme_bw(base_size=14))
+```
+
+
+```{r}
+mat <- fread("https://cells.ucsc.edu/zebrafish-dev/exprMatrix.tsv.gz")
+```
+
+
+```{r}
+meta <- data.frame(fread("https://cells.ucsc.edu/zebrafish-dev/meta.tsv"), row.names=1)
+genes = mat[,1][[1]]
+genes = gsub(".+[|]", "", genes)
+mat = data.frame(mat[,-1], row.names=genes)
+data <- CreateSeuratObject(
+  counts = mat, 
+  project = "zebrafish-dev", 
+  min.cells=3,
+  meta.data=meta)
+data<-NormalizeData(data, normalization.method = "LogNormalize", scale.factor=10000)
+```
+
+```{r}
+data@assays$RNA@counts[1:10, 1:10]
+```
+
+```{r}
+head(x=rownames(x=data))
+names(x=data)
+str(data)
+```
+
+```{r}
+GetAssayData(object=data, slot="data")[1:10, 1:10]
+```
+
+```{r}
+VlnPlot(object = data, features = c("nFeature_RNA"), group.by = c('orig.ident'))
+```
+
+```{r}
+library(Signac)
+library(Seurat)
+library(SeuratWrappers)
+library(monocle3)
+library(Matrix)
+library(ggplot2)
+library(patchwork)
+set.seed(1234)
+```
+

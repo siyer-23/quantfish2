@@ -1,0 +1,152 @@
+---
+<<<<<<< HEAD
+title: "Installing Monocle3 Beta & Seurat 4 with Rv4.0.5"
+=======
+title: "How I Installed Monocle3 Beta & Seurat 4 with Rv4.0.5"
+>>>>>>> b8a92eeca8dfe0b0a76c4f67e129746cf4b9dbdd
+author: "Shay Iyer"
+date: "5/5/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+<<<<<<< HEAD
+[Original installation instructions for Seurat]("https://satijalab.org/seurat/articles/install.html") \br
+[Original installation instructions for Monocle3 Beta]("https://cole-trapnell-lab.github.io/monocle3/docs/installation/")
+=======
+
+>>>>>>> b8a92eeca8dfe0b0a76c4f67e129746cf4b9dbdd
+```{r setup, eval=FALSE}
+knitr::opts_chunk$set(
+	eval = FALSE,
+	message = FALSE,
+	warning = FALSE,
+	include = FALSE
+)
+<<<<<<< HEAD
+```
+
+```{}
+=======
+>>>>>>> b8a92eeca8dfe0b0a76c4f67e129746cf4b9dbdd
+library(tidyverse)
+```
+
+### Installing Seurat
+```{}
+install.packages("Seurat")
+```
+
+### Installing Bioconductor
+```{}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+install.packages("BiocManager")
+BiocManager::install(version = "3.12")
+```
+
+```{}
+BiocManager::install(c('BiocGenerics', 'DelayedArray', 'DelayedMatrixStats',
+                       'limma', 'S4Vectors', 'SingleCellExperiment',
+                       'SummarizedExperiment', 'batchelor', 'Matrix.utils'))
+```
+Take note of non-fatal error messages. 
+
+#### Old package update prompts
+<<<<<<< HEAD
+`Update all/some/none? [a/s/n]: a` \br
+Choose 'a' when prompted. If installation has already failed for these packages once, choose 'n'; take note of all packages, install/load as needed. \br
+`Do you want to install from sources the package which needs compilation? (Yes/no/cancel) yes` \br
+=======
+`Update all/some/none? [a/s/n]: a` <\br>
+Choose 'a' when prompted. If installation has already failed for these packages once, choose 'n'; take note of all packages, install/load as needed. <\br>
+`Do you want to install from sources the package which needs compilation? (Yes/no/cancel) yes` <\br>
+>>>>>>> b8a92eeca8dfe0b0a76c4f67e129746cf4b9dbdd
+Choose 'yes' when prompted If certain package installations had non-zero exit status, make a note of package names. Check if enabled in the Packages tab of RStudio. Install as needed, then load with `library(package-name)`. 
+
+
+###  Installing Monocle 
+
+#### Installing Homebrew
+
+In Terminal:
+```{}
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 
+```
+
+#### Installing gdal and sf
+
+In RStudio, check if you have the 'sf' package. If not, you likely need to install the dependency 'gdal' for your Mac. Open Terminal for your Mac and do the following.
+
+```{}
+brew install pkg-config
+brew install gdal
+```
+
+Then return to R and run:
+```{}
+install.packages("sf", configure.args = "--with-proj-lib=/usr/local/lib/")
+library(sf)
+```
+
+
+#### Installing/re-installing gfortran 
+You probably need to install or reinstall gfortran for the Mac, but it only works if you download the dmg from the appropriate website rather than installing gcc with brew.
+
+<<<<<<< HEAD
+Return to terminal and type `which gfortran`. If a directory is returned, run `sudo rm -r /usr/local/gfortran /usr/local/bin/gfortran` to remove the current package. \br
+
+Next, navigate to [link]("https://github.com/fxcoudert/gfortran-for-macOS/releases") and find the appropriate .dmg file (the Monocle website says to download the tar.xz file and install manually, but the .dmg file is user-friendly, more manageable, and it works). Click on the "Assets" dropdown and download the appropriate .dmg for your osX. The iMac in SR401 runs Mojave; if you want to check on a Mac, click on the Apple logo (top left of the Menu Bar) and select "About this Mac". The OSX system should be listed. \br
+
+Launch the .dmg file from your downloads and install. Then return to Terminal and type `which gfortran` once again; it should return a directory similar if not exactly the same as before. \br
+=======
+Return to terminal and type `which gfortran`. If a directory is returned, run `sudo rm -r /usr/local/gfortran /usr/local/bin/gfortran` to remove the current package. <\br>
+
+Next, navigate to [link]("https://github.com/fxcoudert/gfortran-for-macOS/releases") and find the appropriate .dmg file (the Monocle website says to download the tar.xz file and install manually, but the .dmg file is user-friendly, more manageable, and it works). Click on the "Assets" dropdown and download the appropriate .dmg for your osX. The iMac in SR401 runs Mojave; if you want to check on a Mac, click on the Apple logo (top left of the Menu Bar) and select "About this Mac". The OSX system should be listed. <\br>
+
+Launch the .dmg file from your downloads and install. Then return to Terminal and type `which gfortran` once again; it should return a directory similar if not exactly the same as before. <\br>
+>>>>>>> b8a92eeca8dfe0b0a76c4f67e129746cf4b9dbdd
+
+#### Installing devtools, leidenbase, and monocle3 
+
+```{}
+install.packages(devtools)
+```
+
+```{}
+devtools::install_github('cole-trapnell-lab/leidenbase')
+```
+
+If this works, allow yourself 5 seconds to cry with relief, then run: 
+
+```{}
+devtools::install_github('cole-trapnell-lab/monocle3')
+```
+
+
+### Loading the Seurat Object for Atlas for Zebrafish Development (Farnsworth et al., 2019)
+
+#### Loading libraries
+```{}
+library(Seurat)
+library(Matrix)
+library(monocle3)
+library(R.utils)
+```
+
+#### Getting the expression matrix and metadata from UCSC Cell Browser.
+> IMPORTANT: this will take a large amount of time, and if your computer has an 8GB RAM, R will most likely return the error "resulting vector exceeds vector length limit". This makes me think that there is a far better way to go about downloading the necessary data; *I suggest holding off on running the next two chunks of code*. 
+
+```{}
+require(Seurat)
+require(data.table)
+mat <- fread("https://cells.ucsc.edu/zebrafish-dev/exprMatrix.tsv.gz")
+meta <- data.frame(fread("https://cells.ucsc.edu/zebrafish-dev/meta.tsv"), row.names = 1)
+``` 
+
+```{}
+genes = mat[,1][[1]]
+genes = gsub(".+[|]", "", genes)
+mat = data.frame(mat[,-1], row.names=genes)
+so <- CreateSeuratObject(counts = mat, project = "zebrafish-dev", meta.data=meta)
+```
+
