@@ -26,25 +26,24 @@ knitr::opts_chunk$set(
 <<<<<<< HEAD
 ```
 
-```{}
-=======
->>>>>>> b8a92eeca8dfe0b0a76c4f67e129746cf4b9dbdd
+```{r}
 library(tidyverse)
 ```
 
 ### Installing Seurat
-```{}
+```{r}
 install.packages("Seurat")
 ```
 
 ### Installing Bioconductor
-```{}
+If you are running R Version 4.1.0, install Bioconductor 3.13. If not, upgrade to 4.1.0 and then install the right bioconductor version 
+```{r}
 if (!requireNamespace("BiocManager", quietly = TRUE))
 install.packages("BiocManager")
-BiocManager::install(version = "3.12")
+BiocManager::install(version = "3.13")
 ```
 
-```{}
+```{r}
 BiocManager::install(c('BiocGenerics', 'DelayedArray', 'DelayedMatrixStats',
                        'limma', 'S4Vectors', 'SingleCellExperiment',
                        'SummarizedExperiment', 'batchelor', 'Matrix.utils'))
@@ -60,7 +59,6 @@ Choose 'a' when prompted. If installation has already failed for these packages 
 `Update all/some/none? [a/s/n]: a` <\br>
 Choose 'a' when prompted. If installation has already failed for these packages once, choose 'n'; take note of all packages, install/load as needed. <\br>
 `Do you want to install from sources the package which needs compilation? (Yes/no/cancel) yes` <\br>
->>>>>>> b8a92eeca8dfe0b0a76c4f67e129746cf4b9dbdd
 Choose 'yes' when prompted If certain package installations had non-zero exit status, make a note of package names. Check if enabled in the Packages tab of RStudio. Install as needed, then load with `library(package-name)`. 
 
 
@@ -69,7 +67,7 @@ Choose 'yes' when prompted If certain package installations had non-zero exit st
 #### Installing Homebrew
 
 In Terminal:
-```{}
+```{bash}
 $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 
 ```
 
@@ -77,13 +75,13 @@ $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/
 
 In RStudio, check if you have the 'sf' package. If not, you likely need to install the dependency 'gdal' for your Mac. Open Terminal for your Mac and do the following.
 
-```{}
+```{bash}
 brew install pkg-config
 brew install gdal
 ```
 
 Then return to R and run:
-```{}
+```{r}
 install.packages("sf", configure.args = "--with-proj-lib=/usr/local/lib/")
 library(sf)
 ```
@@ -108,17 +106,17 @@ Launch the .dmg file from your downloads and install. Then return to Terminal an
 
 #### Installing devtools, leidenbase, and monocle3 
 
-```{}
-install.packages(devtools)
+```{r}
+install.packages("devtools")
 ```
 
-```{}
+```{r}
 devtools::install_github('cole-trapnell-lab/leidenbase')
 ```
 
 If this works, allow yourself 5 seconds to cry with relief, then run: 
 
-```{}
+```{r}
 devtools::install_github('cole-trapnell-lab/monocle3')
 ```
 
@@ -126,7 +124,7 @@ devtools::install_github('cole-trapnell-lab/monocle3')
 ### Loading the Seurat Object for Atlas for Zebrafish Development (Farnsworth et al., 2019)
 
 #### Loading libraries
-```{}
+```{r}
 library(Seurat)
 library(Matrix)
 library(monocle3)
@@ -136,14 +134,14 @@ library(R.utils)
 #### Getting the expression matrix and metadata from UCSC Cell Browser.
 > IMPORTANT: this will take a large amount of time, and if your computer has an 8GB RAM, R will most likely return the error "resulting vector exceeds vector length limit". This makes me think that there is a far better way to go about downloading the necessary data; *I suggest holding off on running the next two chunks of code*. 
 
-```{}
+```{r}
 require(Seurat)
 require(data.table)
 mat <- fread("https://cells.ucsc.edu/zebrafish-dev/exprMatrix.tsv.gz")
 meta <- data.frame(fread("https://cells.ucsc.edu/zebrafish-dev/meta.tsv"), row.names = 1)
 ``` 
 
-```{}
+```{r}
 genes = mat[,1][[1]]
 genes = gsub(".+[|]", "", genes)
 mat = data.frame(mat[,-1], row.names=genes)
