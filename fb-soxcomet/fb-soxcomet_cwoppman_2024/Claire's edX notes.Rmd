@@ -51,9 +51,9 @@ Objects:
 objects can be variables or more complex things like functions
   storing variables:
 ```{r}
-a <- 1
-b <- 1
-c <- -1
+a <- 2
+b <- -1
+c <- -4
 ```
   printing variables:
 ```{r}
@@ -96,8 +96,8 @@ args(log)
   this shows that you have to input a number to take the log of, and you can set a base if it isn't e. 
   example:
 ```{r}
-log(8, base = 2)
-log(x = 8, base = 2)
+log(1024, base = 4)
+log(x = 1024, base = 4)
 ```
 arithmetic and relational functions don't need arguments.  
 
@@ -114,3 +114,74 @@ Variable names:
   
 Comments:
   add comments with ##
+  
+  
+Data Types: 
+  use class() to determine the data type of an object (put the object in the parentheses)
+```{r}
+class(murders)
+```
+  Data sets can be stored in data frames. You can have several different data types in one object by using a data frame.
+  the function str() shows you the structure of an object.
+```{r}
+str(murders)
+```
+  show the top six lines of a data fram by using head()
+```{r}
+head(murders)
+```
+  Accessor: to access variables (columns)in the table, use $
+```{r}
+murders$population
+```
+  you can also get the names of columns using names()
+```{r}
+names(murders)
+```
+  the order of the entries above preserves the order of the rows
+  
+Vectors:
+  a list of several values (one or greater entries)
+  length() tells you how many entries in a vector
+```{r}
+pop <- murders$population
+length(pop)
+```
+  to distinguish between variable names and strings, use ""
+```{r}
+class(murders$state)
+```
+  you can have vectors of logical entries too
+```{r}
+z <- 3 == 2
+z
+```
+  == tests if two arguments are equal
+  
+  table() takes a vector as an input and returns the frequency of each element in the vector
+```{r}
+table(murders$region)
+```
+  
+  
+  Factors:
+   - used to store categorical data
+   - often confused with characters
+   - get the factors using levels()
+```{r}
+levels(murders$region)
+```
+   - levels are stored as integers in the background since that takes up less memory
+    - you can only tell the difference between these and characters using class()
+    
+  Assessment: 
+```{r}
+library(dslabs)
+data(movielens)
+str(movielens)
+length(movielens$title)
+class(movielens$genres)
+nlevels(movielens$genres)
+```
+  
+  
