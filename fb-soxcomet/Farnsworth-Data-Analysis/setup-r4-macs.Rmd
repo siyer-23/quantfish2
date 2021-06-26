@@ -1,9 +1,8 @@
 ---
 <<<<<<< HEAD
-title: "Installing Monocle3 Beta & Seurat 4 with Rv4.0.5"
+title: "Installing Monocle3 Beta & Seurat 4 with Rv4.1.0"
 =======
-title: "How I Installed Monocle3 Beta & Seurat 4 with Rv4.0.5"
->>>>>>> b8a92eeca8dfe0b0a76c4f67e129746cf4b9dbdd
+title: "How I Installed Monocle3 Beta & Seurat 4 with Rv4.1.0"
 author: "Shay Iyer"
 date: "5/5/2021"
 output: html_document
