@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 ### Installing tidyverse, if you don't have it already
 
-> Tip: You only ever need to install a package once with `packages.install("[package.as.string")`, but you need to load it using the `library(package_as_var)` function every time you start up R, and in every new RMarkdown file that you make (so that it can knit every time someone runs it)
+> Tip: You only ever need to install a package once with `install.packages("[package.name.as.string")`, but you need to load it using the `library(package_as_var)` function every time you start up R, and in every new RMarkdown file that you make (so that it can knit every time someone runs it)
 
 ```{r eval = FALSE}
 install.packages("tidyverse")
